@@ -58,10 +58,14 @@ struct ContentView: View {
 
     @ViewBuilder private var layout: some View {
         #if os(macOS)
-        HSplitView {
+        // A sidebar with the settings and the preview filling the rest. The
+        // split view gives the sidebar a definite width, so every row lays
+        // out inside it instead of spilling past both edges.
+        NavigationSplitView {
             Form { controls }
                 .formStyle(.grouped)
-                .frame(minWidth: 360, idealWidth: 400, maxWidth: 480)
+                .navigationSplitViewColumnWidth(min: 340, ideal: 400, max: 520)
+        } detail: {
             previewPane
                 .padding()
                 .frame(minWidth: 380, maxWidth: .infinity, maxHeight: .infinity)
@@ -199,7 +203,7 @@ struct ContentView: View {
         } header: {
             Text("Filaments, bottom to top")
         } footer: {
-            Text("TD is transmission distance in mm. Brand libraries list it, or print a step wedge to measure your own spool. Changing a start layer turns automatic picking off.")
+            FooterText("TD is transmission distance in mm. Brand libraries list it, or print a step wedge to measure your own spool. Changing a start layer turns automatic picking off.")
         }
     }
 
@@ -209,11 +213,16 @@ struct ContentView: View {
             HStack {
                 ColorPicker("Color", selection: colorBinding(f), supportsOpacity: false)
                     .labelsHidden()
+                // The Mac's grouped Form shows a field's title as a row label.
+                // These rows have their own layout, so the titles are hidden
+                // ("Name" stays as the placeholder).
                 TextField("Name", text: f.name)
+                    .labelsHidden()
             }
             HStack {
                 Text("TD")
                 TextField("TD", value: f.td, format: .number.precision(.fractionLength(1...2)))
+                    .labelsHidden()
                     .frame(width: 60)
                     #if os(iOS)
                     .keyboardType(.decimalPad)
@@ -284,7 +293,7 @@ struct ContentView: View {
         } header: {
             Text("Print plan")
         } footer: {
-            Text("In Bambu Studio, set layer height and first layer height to the same value. Slice, drag the layer slider to each layer above, right-click the handle, choose Change filament, and pick that AMS slot.")
+            FooterText("In Bambu Studio, set layer height and first layer height to the same value. Slice, drag the layer slider to each layer above, right-click the handle, choose Change filament, and pick that AMS slot.")
         }
     }
 
@@ -302,11 +311,24 @@ struct ContentView: View {
             }
             .disabled(model.grid == nil || model.isWorking)
         } footer: {
-            Text("Print it flat with the base on the plate. The picture is viewed from the top, where thin areas let the darker layers show through.")
+            FooterText("Print it flat with the base on the plate. The picture is viewed from the top, where thin areas let the darker layers show through.")
         }
     }
 }
 
 #Preview {
     ContentView()
+}
+
+/// Section footer text that wraps. On the Mac a long single-line Text keeps
+/// its full one-line width, which made the whole settings column wider than
+/// the window and cut off both edges.
+private struct FooterText: View {
+    let text: String
+    init(_ text: String) { self.text = text }
+    var body: some View {
+        Text(text)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
 }
