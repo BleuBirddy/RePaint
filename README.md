@@ -79,3 +79,11 @@ Scope test for anything new: does it help you get one good print from one image?
 - **Photos you don't own:** fine for personal prints, not for selling on Etsy.
 - **Not checked yet:** whether another app called "RePaint" is already on the
   App Store, and the Mac UI by eye (only the iPhone simulator has been looked at).
+
+## License
+
+MIT. See [LICENSE](LICENSE).
+
+RePaint is an independent project. It isn't affiliated with or endorsed by
+HueForge or its developer, and HueForge is mentioned only to describe the
+kind of tool this is.
