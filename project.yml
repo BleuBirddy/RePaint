@@ -1,0 +1,76 @@
+name: RePaint
+
+options:
+  bundleIdPrefix: dev.jey
+  deploymentTarget:
+    iOS: "17.0"
+    macOS: "14.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    # The code was written for Xcode's stock Multiplatform App template, which
+    # runs everything on the main actor unless a type says `nonisolated`.
+    # The engine types say that so they can run on background threads.
+    SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+    SWIFT_APPROACHABLE_CONCURRENCY: YES
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  RePaint:
+    type: application
+    # One target, three devices: iPhone, iPad, and a native Mac app (same
+    # setup as ReWatch). The Mac matters most because the slicer runs there.
+    supportedDestinations: [iOS, macOS]
+    platform: auto
+    sources:
+      - path: RePaint
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.jey.repaint
+        TARGETED_DEVICE_FAMILY: "1,2"
+        # The Mac build is sandboxed. Without user-selected Read/Write access
+        # the Save panel can't write the STL.
+        "CODE_SIGN_ENTITLEMENTS[sdk=macosx*]": RePaint/Supporting/RePaint-Mac.entitlements
+        # No custom plist keys yet, so Xcode generates Info.plist.
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: RePaint
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.graphics-design
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+
+  RePaintTests:
+    type: bundle.unit-test
+    supportedDestinations: [iOS, macOS]
+    platform: auto
+    sources:
+      - path: RePaintTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.jey.repaint.tests
+        GENERATE_INFOPLIST_FILE: YES
+        # xcodegen writes the iPhone app layout (RePaint.app/RePaint). A Mac
+        # app keeps its binary in Contents/MacOS, so the Mac needs its own path.
+        "TEST_HOST[sdk=macosx*]": "$(BUILT_PRODUCTS_DIR)/RePaint.app/Contents/MacOS/RePaint"
+    dependencies:
+      - target: RePaint
+
+schemes:
+  RePaint:
+    build:
+      targets:
+        RePaint: all
+        RePaintTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - RePaintTests
+    archive:
+      config: Release
