@@ -1,0 +1,9 @@
+# Generated from project.yml by xcodegen. Edit project.yml, then run `xcodegen generate`.
+RePaint.xcodeproj/
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.DS_Store
+# The unzipped FilamentPainter code that RePaint started from. Kept locally for reference only.
+_import/
