@@ -2,7 +2,11 @@ import SwiftUI
 import PhotosUI
 import UniformTypeIdentifiers
 
-struct ContentView: View {
+struct PainterView: View {
+    /// Called when the user sends the painting to the Slicer tab. nil hides
+    /// the button.
+    var onSlice: ((Painting) -> Void)?
+
     @State private var model = PainterModel()
     @State private var photoItem: PhotosPickerItem?
     @State private var importing = false
@@ -77,7 +81,7 @@ struct ContentView: View {
                 Section { previewPane.frame(height: 380) }
                 controls
             }
-            .navigationTitle("RePaint")
+            .navigationTitle("Painter")
         }
         #endif
     }
@@ -310,6 +314,19 @@ struct ContentView: View {
                 Label("Export STL", systemImage: "cube")
             }
             .disabled(model.grid == nil || model.isWorking)
+
+            if let onSlice {
+                Button {
+                    Task {
+                        if let data = await model.makeSTL() {
+                            onSlice(model.painting(stl: data))
+                        }
+                    }
+                } label: {
+                    Label("Open in Slicer", systemImage: "square.3.layers.3d")
+                }
+                .disabled(model.grid == nil || model.isWorking)
+            }
         } footer: {
             FooterText("Print it flat with the base on the plate. The picture is viewed from the top, where thin areas let the darker layers show through.")
         }
@@ -317,7 +334,7 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    PainterView()
 }
 
 /// Section footer text that wraps. On the Mac a long single-line Text keeps

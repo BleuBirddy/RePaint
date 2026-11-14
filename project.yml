@@ -23,20 +23,33 @@ targets:
   RePaint:
     type: application
     # One target, three devices: iPhone, iPad, and a native Mac app (same
-    # setup as ReWatch). The Mac matters most because the slicer runs there.
+    # setup as ReWatch). The Mac matters for testing: the engine tests run fastest there.
     supportedDestinations: [iOS, macOS]
     platform: auto
     sources:
       - path: RePaint
+        # The vendored library's own README would otherwise be copied into
+        # the app. Its LICENSE.txt is copied on purpose: the Boost license
+        # asks that the text travels with the code.
+        excludes:
+          - "Vendor/**/README.md"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.jey.repaint
+        # The slicer uses Clipper2, which is C++. Swift reaches it through
+        # the plain-C functions in this header (see the comment at its top).
+        SWIFT_OBJC_BRIDGING_HEADER: RePaint/Slicer/Engine/ClipperBridge.h
+        HEADER_SEARCH_PATHS: "$(SRCROOT)/RePaint/Vendor/Clipper2/include"
+        CLANG_CXX_LANGUAGE_STANDARD: "c++17"
         TARGETED_DEVICE_FAMILY: "1,2"
         # The Mac build is sandboxed. Without user-selected Read/Write access
-        # the Save panel can't write the STL.
+        # the Save panel can't write the STL or the G-code.
         "CODE_SIGN_ENTITLEMENTS[sdk=macosx*]": RePaint/Supporting/RePaint-Mac.entitlements
         # No custom plist keys yet, so Xcode generates Info.plist.
         GENERATE_INFOPLIST_FILE: YES
+        # The full name is "RePaint: Slicer & Filament Painter" (README, and
+        # the App Store listing later). Under the icon there is only room
+        # for about a dozen letters, so the short name goes here.
         INFOPLIST_KEY_CFBundleDisplayName: RePaint
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.graphics-design
         INFOPLIST_KEY_UILaunchScreen_Generation: YES

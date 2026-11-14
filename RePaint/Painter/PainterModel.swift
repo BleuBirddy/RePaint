@@ -174,6 +174,17 @@ final class PainterModel {
         return String(format: "%.0f × %.0f mm · %.2f mm thick · %.0f MB STL", g.widthMM, g.heightMM, thick, mb)
     }
 
+    /// The painting with its print plan, in the form the Slicer takes: the
+    /// bottom filament starts in AMS slot 1 and each further one swaps in at
+    /// its first layer, from slots 2, 3, … in the same order as the list.
+    func painting(stl: Data) -> Painting {
+        Painting(stl: stl, name: sourceName, layerHeight: settings.layerHeight,
+                 firstFilamentName: filaments.first?.name ?? "",
+                 swaps: filaments.indices.dropFirst().map {
+                     FilamentSwap(layer: layerNumber(for: $0), slot: $0 + 1, name: filaments[$0].name)
+                 })
+    }
+
     var planText: String {
         var lines = [
             "Filament painting: \(sourceName)",
